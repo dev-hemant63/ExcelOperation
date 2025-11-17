@@ -34,7 +34,7 @@ namespace ExcelOperation.Utility
 
             return dt;
         }
-       public static byte[] ExportDataTableToExcel(DataTable dataTable, string title)
+ public static byte[] ExportDataTableToExcel(DataTable dataTable, string title)
 {
     ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
@@ -44,51 +44,39 @@ namespace ExcelOperation.Utility
 
         int totalColumns = dataTable.Columns.Count;
 
-        // ============================
-        // 1. ADD TITLE (Row 1)
-        // ============================
+        // ======================================
+        // 1. TITLE (ROW 1)
+        // ======================================
         worksheet.Cells[1, 1].Value = title;
-
         worksheet.Cells[1, 1, 1, totalColumns].Merge = true;
 
-        // Title style
         worksheet.Cells[1, 1].Style.Font.Bold = true;
         worksheet.Cells[1, 1].Style.Font.Size = 16;
-
-        // 👉 Set Title Color (Blue Example)
         worksheet.Cells[1, 1].Style.Font.Color.SetColor(Color.DarkBlue);
-
-        worksheet.Cells[1, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-        worksheet.Cells[1, 1].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
-
-        // Background highlight (optional)
-        worksheet.Cells[1, 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+        worksheet.Cells[1, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
         worksheet.Cells[1, 1].Style.Fill.BackgroundColor.SetColor(Color.LightYellow);
+        worksheet.Cells[1, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+        worksheet.Cells[1, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
         worksheet.Row(1).Height = 28;
 
-        // ============================
-        // 2. COLUMN HEADERS (Row 2)
-        // ============================
+        // ======================================
+        // 2. HEADER (ROW 2)
+        // ======================================
         for (int i = 0; i < totalColumns; i++)
         {
             worksheet.Cells[2, i + 1].Value = dataTable.Columns[i].ColumnName;
-
             worksheet.Cells[2, i + 1].Style.Font.Bold = true;
 
-            // 👉 Column header background color
-            worksheet.Cells[2, i + 1].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            worksheet.Cells[2, i + 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
             worksheet.Cells[2, i + 1].Style.Fill.BackgroundColor.SetColor(Color.SteelBlue);
-
-            // 👉 Column header text color (White)
             worksheet.Cells[2, i + 1].Style.Font.Color.SetColor(Color.White);
-
-            worksheet.Cells[2, i + 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            worksheet.Cells[2, i + 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         }
 
-        // ============================
-        // 3. DATA (Row 3 onward)
-        // ============================
+        // ======================================
+        // 3. DATA (START ROW 3)
+        // ======================================
         for (int row = 0; row < dataTable.Rows.Count; row++)
         {
             for (int col = 0; col < totalColumns; col++)
@@ -97,11 +85,31 @@ namespace ExcelOperation.Utility
             }
         }
 
+        // ======================================
+        // 4. APPLY ALL BORDERS
+        // ======================================
+        int totalRows = dataTable.Rows.Count + 2; // title = row1, header = row2
+
+        using (var range = worksheet.Cells[1, 1, totalRows, totalColumns])
+        {
+            range.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+            range.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+            range.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+            range.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+
+            range.Style.Border.Top.Color.SetColor(Color.Black);
+            range.Style.Border.Bottom.Color.SetColor(Color.Black);
+            range.Style.Border.Left.Color.SetColor(Color.Black);
+            range.Style.Border.Right.Color.SetColor(Color.Black);
+        }
+
+        // Auto-fit columns
         worksheet.Cells.AutoFitColumns();
 
         return excelPackage.GetAsByteArray();
     }
 }
+
         }
     }
 }
